@@ -10,13 +10,17 @@ import reportRoutes from "./routes/reportRoutes.js";
 const app = express();
 
 // app.use(cors());
+import cors from "cors";
+
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://sgt-marketing-task-manager.vercel.app/",
+      "https://sgt-marketing-task-manager.vercel.app",
     ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 
