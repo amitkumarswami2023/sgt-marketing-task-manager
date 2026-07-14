@@ -12,7 +12,10 @@ const app = express();
 // app.use(cors());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://your-project.vercel.app"],
+    origin: [
+      "http://localhost:5173",
+      "https://sgt-marketing-task-manager.vercel.app/",
+    ],
     credentials: true,
   }),
 );
