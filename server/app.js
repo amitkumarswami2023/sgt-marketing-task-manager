@@ -10,7 +10,6 @@ import reportRoutes from "./routes/reportRoutes.js";
 const app = express();
 
 // app.use(cors());
-import cors from "cors";
 
 app.use(
   cors({
