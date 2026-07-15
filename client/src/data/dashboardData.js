@@ -142,23 +142,23 @@ export const insights = [
 export const channelPerformance = [
   {
     channel: "Google Ads",
-    admissions: 5574,
+    leads: 5574,
   },
   {
     channel: "Meta Ads",
-    admissions: 4040,
+    leads: 4040,
   },
   {
     channel: "SEO",
-    admissions: 2334,
+    leads: 2334,
   },
   {
     channel: "Communication",
-    admissions: 75,
+    leads: 75,
   },
   {
     channel: "Email",
-    admissions: 48,
+    leads: 48,
   },
 ];
 
