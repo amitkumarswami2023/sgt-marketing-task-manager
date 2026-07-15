@@ -49,6 +49,13 @@ const TrafficOverview = () => {
             stroke="#134080"
             strokeWidth={3}
           />
+
+          <Line
+            type="monotone"
+            dataKey="direct"
+            stroke="#FFA500"
+            strokeWidth={3}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>
