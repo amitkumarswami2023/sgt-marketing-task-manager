@@ -20,7 +20,9 @@ const TrafficOverview = () => {
             Website Traffic
           </h2>
 
-          <p className="text-sm text-slate-500">Organic vs Paid Traffic</p>
+          <p className="text-sm text-slate-500">
+            Organic vs Paid Traffic vs Direct Traffic
+          </p>
         </div>
       </div>
 
