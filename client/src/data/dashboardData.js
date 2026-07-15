@@ -1,27 +1,31 @@
 export const executiveSummary = [
   {
-    title: "Marketing Spend",
-    value: "₹15.4L",
-    change: "+12%",
+    title: "Total Ad Spend",
+    value: "₹92.28L",
+    change: "Mar - Jun",
     positive: true,
+    icon: "spend",
   },
   {
-    title: "Leads",
-    value: "2,584",
-    change: "+18%",
+    title: "Impressions",
+    value: "80.13L",
+    change: "8,012,567",
     positive: true,
+    icon: "impressions",
   },
   {
-    title: "Admissions",
-    value: "689",
-    change: "+9%",
+    title: "Clicks",
+    value: "349,546",
+    change: "CTR 4.36%",
     positive: true,
+    icon: "clicks",
   },
   {
-    title: "Cost / Admission",
-    value: "₹1,807",
-    change: "-8%",
+    title: "Conversions",
+    value: "14,593",
+    change: "₹632 / Conv.",
     positive: true,
+    icon: "conversions",
   },
 ];
 
