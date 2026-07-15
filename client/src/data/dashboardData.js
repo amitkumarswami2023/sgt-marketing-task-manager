@@ -77,12 +77,12 @@ export const kpiCards = [
 ];
 
 export const trafficData = [
-  { month: "Jan", organic: 32000, paid: 18000 },
-  { month: "Feb", organic: 38000, paid: 22000 },
-  { month: "Mar", organic: 45000, paid: 26000 },
-  { month: "Apr", organic: 42000, paid: 24000 },
-  { month: "May", organic: 52000, paid: 31000 },
-  { month: "Jun", organic: 61000, paid: 35000 },
+  { month: "Jan", organic: 36368, paid: 46950, direct: 22502 },
+  { month: "Feb", organic: 33465, paid: 143773, direct: 26272 },
+  { month: "Mar", organic: 41995, paid: 31205, direct: 20454 },
+  { month: "Apr", organic: 51673, paid: 41171, direct: 16142 },
+  { month: "May", organic: 64118, paid: 70412, direct: 19766 },
+  { month: "Jun", organic: 54558, paid: 77799, direct: 20781 },
 ];
 
 export const leadSourceData = [
