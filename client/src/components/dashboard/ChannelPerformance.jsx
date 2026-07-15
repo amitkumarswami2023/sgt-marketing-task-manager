@@ -31,7 +31,7 @@ const ChannelPerformance = () => {
 
           <Tooltip />
 
-          <Bar dataKey="admissions" fill="#134080" radius={[8, 8, 0, 0]} />
+          <Bar dataKey="leads" fill="#134080" radius={[8, 8, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
