@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import PriorityBadge from "../../components/common/PriorityBadge";
-import StatusBadge from "../../components/common/StatusBadge";
 import {
   getTasks,
   deleteTask,
@@ -13,23 +11,23 @@ import TaskTable from "../../components/tasks/TaskTable";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { toast } from "react-toastify";
 import TaskStats from "../../components/tasks/TaskStats";
-
+import DeliverableModal from "../../components/tasks/DeliverableModal";
 const Tasks = () => {
   const dispatch = useDispatch();
 
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
-  const { user } = useSelector((state) => state.auth);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [openDeliverables, setOpenDeliverables] = useState(false);
 
-  // Later we'll replace this with Redux
-  const { tasks, loading } = useSelector((state) => state.tasks);
-  const reduxState = useSelector((state) => state);
   const [search, setSearch] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
 
+  // Later we'll replace this with Redux
+  const { tasks, loading } = useSelector((state) => state.tasks);
+  const { user } = useSelector((state) => state.auth);
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
       task.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -44,8 +42,6 @@ const Tasks = () => {
 
     return matchesSearch && matchesDepartment && matchesStatus;
   });
-
-  console.log(reduxState);
 
   useEffect(() => {
     dispatch(getTasks());
@@ -141,6 +137,7 @@ const Tasks = () => {
             <option value="Content">Content</option>
 
             <option value="Graphics">Graphics</option>
+            <option value="Communications">Communications</option>
 
             <option value="CRM">CRM</option>
           </select>
@@ -161,7 +158,10 @@ const Tasks = () => {
         <TaskTable
           tasks={filteredTasks}
           user={user}
-          onView={(task) => console.log(task)}
+          onView={(task) => {
+            setSelectedTask(task);
+            setOpenDeliverables(true);
+          }}
           onEdit={(task) => {
             setEditingTask(task);
             setOpen(true);
@@ -186,6 +186,11 @@ const Tasks = () => {
         message="Are you sure you want to delete this task?"
         onCancel={() => setDeleteOpen(false)}
         onConfirm={confirmDelete}
+      />
+      <DeliverableModal
+        open={openDeliverables}
+        onClose={() => setOpenDeliverables(false)}
+        task={selectedTask}
       />
     </div>
   );

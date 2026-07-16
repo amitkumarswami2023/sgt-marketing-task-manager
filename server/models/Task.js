@@ -60,6 +60,31 @@ const taskSchema = new mongoose.Schema(
       },
     ],
 
+    // Final work submitted by the assignee
+    deliverables: [
+      {
+        title: {
+          type: String,
+          required: true,
+        },
+
+        url: {
+          type: String,
+          required: true,
+        },
+
+        addedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+
+        addedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
     comments: [
       {
         user: {

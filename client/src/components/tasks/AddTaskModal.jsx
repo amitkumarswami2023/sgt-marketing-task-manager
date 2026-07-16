@@ -1,105 +1,98 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { createTask, updateTask } from "../../features/tasks/taskSlice";
 import { toast } from "react-toastify";
 
-const AddTaskModal = ({ open, onClose, editingTask }) => {
-  const [users, setUsers] = useState([]);
+const initialForm = {
+  title: "",
+  description: "",
+  department: "",
+  assignedTo: "",
+  priority: "Medium",
+  dueDate: "",
+};
 
+const AddTaskModal = ({ open, onClose, editingTask }) => {
   const dispatch = useDispatch();
 
-  const { user } = useSelector((state) => state.auth);
-
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    department: "",
-    assignedTo: "",
-    priority: "Medium",
-    dueDate: "",
-  });
+  const [users, setUsers] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState(initialForm);
 
   useEffect(() => {
-    if (!open || !user) return;
+    if (!open) return;
 
     fetchUsers();
 
     if (editingTask) {
       setForm({
-        title: editingTask.title,
-        description: editingTask.description,
-        department: editingTask.department,
-        assignedTo: editingTask.assignedTo?._id,
-        priority: editingTask.priority,
+        title: editingTask.title || "",
+        description: editingTask.description || "",
+        department: editingTask.department || "",
+        assignedTo: editingTask.assignedTo?._id || "",
+        priority: editingTask.priority || "Medium",
         dueDate: editingTask.dueDate
           ? editingTask.dueDate.substring(0, 10)
           : "",
       });
     } else {
-      setForm({
-        title: "",
-        description: "",
-        department: user.role === "admin" ? "" : user.department,
-
-        assignedTo: user.role === "employee" ? user._id : "",
-
-        priority: "Medium",
-        dueDate: "",
-      });
+      setForm(initialForm);
     }
-  }, [open, editingTask, user]);
-
-  console.log("AUTH USER FROM REDUX:", user);
+  }, [open, editingTask]);
 
   const fetchUsers = async () => {
     try {
       const { data } = await api.get("/users");
 
-      console.log("CURRENT USER:", user);
-      console.log("USERS API:", data.users);
-
       if (data.success) {
-        let filteredUsers = [];
+        const filteredUsers = data.users
+          .filter((u) => u.role !== "admin")
+          .sort((a, b) => {
+            if (a.department === b.department) {
+              return a.name.localeCompare(b.name);
+            }
 
-        if (user.role === "admin") {
-          filteredUsers = data.users.filter((u) => u.role !== "admin");
-        } else if (user?.role === "team-lead") {
-          filteredUsers = data.users.filter(
-            (u) =>
-              u._id !== user._id &&
-              u.department?.trim().toLowerCase() ===
-                user.department?.trim().toLowerCase(),
-          );
-        } else if (user.role === "employee") {
-          filteredUsers = data.users.filter((u) => u._id === user._id);
-        }
-
-        console.log("FILTERED USERS:", filteredUsers);
+            return a.department.localeCompare(b.department);
+          });
 
         setUsers(filteredUsers);
       }
     } catch (error) {
       console.log(error);
+      toast.error("Unable to load users");
     }
   };
 
+  const handleChange = (e) => {
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleAssignUser = (e) => {
+    const selectedUser = users.find((u) => u._id === e.target.value);
+
+    setForm((prev) => ({
+      ...prev,
+      assignedTo: e.target.value,
+      department: selectedUser?.department || "",
+    }));
+  };
+
   const handleSubmit = async () => {
-    let finalForm = { ...form };
-
-    // Employee always assigns himself
-
-    if (user?.role === "employee") {
-      finalForm.assignedTo = user._id;
-
-      finalForm.department = user.department;
+    if (!form.title.trim()) {
+      toast.error("Task title is required");
+      return;
     }
 
-    // Team lead cannot change department
-
-    if (user?.role === "team-lead") {
-      finalForm.department = user.department;
+    if (!form.assignedTo) {
+      toast.error("Please select a user");
+      return;
     }
+
+    setSaving(true);
 
     let result;
 
@@ -107,38 +100,34 @@ const AddTaskModal = ({ open, onClose, editingTask }) => {
       result = await dispatch(
         updateTask({
           id: editingTask._id,
-
-          taskData: finalForm,
+          taskData: form,
         }),
       );
     } else {
-      result = await dispatch(createTask(finalForm));
+      result = await dispatch(createTask(form));
     }
+
+    setSaving(false);
 
     if (result.meta.requestStatus === "fulfilled") {
       toast.success(
         editingTask ? "Task Updated Successfully" : "Task Created Successfully",
       );
 
+      setForm(initialForm);
       onClose();
     } else {
-      toast.error("Something went wrong");
+      toast.error(result.payload || "Something went wrong");
     }
-  };
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-
-      [e.target.name]: e.target.value,
-    });
   };
 
   if (!open) return null;
 
+  const departments = [...new Set(users.map((u) => u.department))].sort();
+
   return (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-      <div className="bg-white w-[700px] rounded-xl p-6">
+    <div className="fixed inset-0 bg-black/40 z-50 flex justify-center items-center">
+      <div className="bg-white rounded-2xl w-[720px] max-w-[95%] p-6">
         <h2 className="text-2xl font-bold mb-6">
           {editingTask ? "Edit Task" : "Create Task"}
         </h2>
@@ -149,7 +138,15 @@ const AddTaskModal = ({ open, onClose, editingTask }) => {
             value={form.title}
             onChange={handleChange}
             placeholder="Task Title"
-            className="border rounded-lg p-3"
+            className="border rounded-lg p-3 focus:ring-2 focus:ring-[#134080] outline-none"
+          />
+
+          <input
+            type="text"
+            value={form.department}
+            readOnly
+            placeholder="Department"
+            className="border rounded-lg p-3 bg-gray-100"
           />
 
           <textarea
@@ -157,45 +154,28 @@ const AddTaskModal = ({ open, onClose, editingTask }) => {
             name="description"
             value={form.description}
             onChange={handleChange}
-            placeholder="Description"
-            className="border rounded-lg p-3 col-span-2"
+            placeholder="Task Description"
+            className="border rounded-lg p-3 col-span-2 resize-none focus:ring-2 focus:ring-[#134080] outline-none"
           />
 
           <select
-            name="department"
-            value={form.department}
-            onChange={handleChange}
-            disabled={user?.role === "team-lead" || user?.role === "employee"}
-            className="border rounded-lg p-3"
-          >
-            <option value="">Select Department</option>
-
-            <option>Web Development</option>
-
-            <option>SEO</option>
-
-            <option>Content</option>
-
-            <option>Graphics</option>
-
-            <option>CRM</option>
-
-            <option>Communications</option>
-          </select>
-
-          <select
-            name="assignedTo"
             value={form.assignedTo}
-            onChange={handleChange}
-            disabled={user?.role === "employee"}
-            className="border rounded-lg p-3"
+            onChange={handleAssignUser}
+            className="border rounded-lg p-3 focus:ring-2 focus:ring-[#134080] outline-none"
           >
             <option value="">Assign User</option>
 
-            {users.map((u) => (
-              <option key={u._id} value={u._id}>
-                {u.name}
-              </option>
+            {departments.map((dept) => (
+              <optgroup key={dept} label={dept}>
+                {users
+                  .filter((u) => u.department === dept)
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((u) => (
+                    <option key={u._id} value={u._id}>
+                      {u.name} ({u.designation})
+                    </option>
+                  ))}
+              </optgroup>
             ))}
           </select>
 
@@ -203,15 +183,12 @@ const AddTaskModal = ({ open, onClose, editingTask }) => {
             name="priority"
             value={form.priority}
             onChange={handleChange}
-            className="border rounded-lg p-3"
+            className="border rounded-lg p-3 focus:ring-2 focus:ring-[#134080] outline-none"
           >
-            <option>Low</option>
-
-            <option>Medium</option>
-
-            <option>High</option>
-
-            <option>Urgent</option>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+            <option value="Urgent">Urgent</option>
           </select>
 
           <input
@@ -219,20 +196,27 @@ const AddTaskModal = ({ open, onClose, editingTask }) => {
             name="dueDate"
             value={form.dueDate}
             onChange={handleChange}
-            className="border rounded-lg p-3"
+            className="border rounded-lg p-3 focus:ring-2 focus:ring-[#134080] outline-none"
           />
         </div>
 
-        <div className="flex justify-end gap-3 mt-6">
-          <button onClick={onClose} className="border px-5 py-2 rounded-lg">
+        <div className="flex justify-end gap-3 mt-8">
+          <button
+            onClick={() => {
+              setForm(initialForm);
+              onClose();
+            }}
+            className="border rounded-lg px-6 py-2 hover:bg-gray-100"
+          >
             Cancel
           </button>
 
           <button
+            disabled={saving}
             onClick={handleSubmit}
-            className="bg-[#134080] text-white px-5 py-2 rounded-lg"
+            className="bg-[#134080] hover:bg-[#0d2f63] disabled:opacity-60 text-white rounded-lg px-6 py-2 transition"
           >
-            {editingTask ? "Update Task" : "Create Task"}
+            {saving ? "Saving..." : editingTask ? "Update Task" : "Create Task"}
           </button>
         </div>
       </div>

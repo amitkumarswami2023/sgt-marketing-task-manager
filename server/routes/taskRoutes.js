@@ -7,33 +7,46 @@ import {
   updateTask,
   deleteTask,
   updateTaskStatus,
+  addDeliverable,
 } from "../controllers/taskController.js";
 
 import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+// ==========================
 // Create Task
-// Admin, Team Lead, Employee
+// ==========================
 router.post("/", protect, createTask);
 
-// Admin gets all tasks
-// Team Lead + Employee get department tasks
+// ==========================
+// Get Tasks
+// ==========================
 router.get("/department", protect, getDepartmentTasks);
 
-// Logged in user personal tasks
+// ==========================
+// My Tasks
+// ==========================
 router.get("/my", protect, getMyTasks);
 
-// Edit Task
-// All roles
+// ==========================
+// Update Task
+// ==========================
 router.put("/:id", protect, updateTask);
 
-// Change Status
-// All roles
+// ==========================
+// Update Status
+// ==========================
 router.patch("/:id/status", protect, updateTaskStatus);
 
+// ==========================
+// Add Deliverable
+// ==========================
+router.post("/:id/deliverables", protect, addDeliverable);
+
+// ==========================
 // Delete Task
-// All roles
+// ==========================
 router.delete("/:id", protect, deleteTask);
 
 export default router;

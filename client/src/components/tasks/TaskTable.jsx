@@ -1,4 +1,12 @@
-import { Pencil, Trash2, Eye } from "lucide-react";
+import {
+  Calendar,
+  User,
+  UserRound,
+  Building2,
+  Link2,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
 import StatusBadge from "../common/StatusBadge";
 import PriorityBadge from "../common/PriorityBadge";
@@ -11,119 +19,157 @@ const TaskTable = ({
   onDelete,
   onView,
   onStatusChange,
+  onDeliverables,
 }) => {
   if (!tasks.length) {
     return (
-      <div className="bg-white rounded-xl p-10 text-center text-gray-500">
+      <div className="bg-white rounded-xl p-10 text-center text-gray-500 shadow">
         No Tasks Found
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl shadow overflow-x-auto">
-      <table className="min-w-full">
-        <thead className="bg-slate-100">
-          <tr>
-            <th className="text-left px-6 py-4">Task</th>
+    <div className="space-y-5">
+      {tasks.map((task) => {
+        const canEdit =
+          user.role === "admin" || task.assignedBy?._id === user._id;
 
-            <th className="text-left px-6 py-4">Assigned To</th>
+        const canDelete =
+          user.role === "admin" || task.assignedBy?._id === user._id;
 
-            <th className="text-left px-6 py-4">Department</th>
+        const canUpdateStatus = task.assignedTo?._id === user._id;
 
-            <th className="text-left px-6 py-4">Priority</th>
+        return (
+          <div
+            key={task._id}
+            className="bg-white rounded-2xl shadow border border-slate-200 p-6 hover:shadow-md transition"
+          >
+            {/* Header */}
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800">
+                  {task.title}
+                </h2>
 
-            <th className="text-left px-6 py-4">Status</th>
+                <p className="text-gray-500 mt-2">
+                  {task.description || "No description provided"}
+                </p>
+              </div>
 
-            <th className="text-left px-6 py-4">Progress</th>
-
-            <th className="text-left px-6 py-4">Due Date</th>
-
-            <th className="text-center px-6 py-4">Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {tasks.map((task) => (
-            <tr key={task._id} className="border-t hover:bg-slate-50">
-              <td className="px-6 py-4">
-                <h3 className="font-semibold">{task.title}</h3>
-
-                <p className="text-sm text-gray-500">{task.description}</p>
-              </td>
-
-              <td className="px-6 py-4">{task.assignedTo?.name}</td>
-
-              <td className="px-6 py-4">{task.department}</td>
-
-              <td className="px-6 py-4">
+              <div className="flex gap-2 flex-wrap">
                 <PriorityBadge priority={task.priority} />
-              </td>
-
-              <td className="px-6 py-4">
                 <StatusBadge status={task.status} />
-              </td>
+              </div>
+            </div>
 
-              <td className="px-6 py-4">
-                <ProgressBar progress={task.progress} />
-              </td>
+            {/* Details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-6">
+              <div className="flex items-start gap-3">
+                <UserRound size={18} className="text-[#134080] mt-1" />
+                <div>
+                  <p className="text-xs text-gray-500">Assigned By</p>
+                  <p className="font-medium">{task.assignedBy?.name || "-"}</p>
+                </div>
+              </div>
 
-              <td className="px-6 py-4">
-                {task.dueDate
-                  ? new Date(task.dueDate).toLocaleDateString()
-                  : "-"}
-              </td>
+              <div className="flex items-start gap-3">
+                <User size={18} className="text-[#134080] mt-1" />
+                <div>
+                  <p className="text-xs text-gray-500">Assigned To</p>
+                  <p className="font-medium">{task.assignedTo?.name || "-"}</p>
+                </div>
+              </div>
 
-              <td className="px-6 py-4">
-                <div className="flex flex-wrap gap-2">
-                  {/* View - Everyone */}
+              <div className="flex items-start gap-3">
+                <Building2 size={18} className="text-[#134080] mt-1" />
+                <div>
+                  <p className="text-xs text-gray-500">Department</p>
+                  <p className="font-medium">{task.department}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Calendar size={18} className="text-[#134080] mt-1" />
+                <div>
+                  <p className="text-xs text-gray-500">Due Date</p>
+                  <p className="font-medium">
+                    {task.dueDate
+                      ? new Date(task.dueDate).toLocaleDateString()
+                      : "-"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Progress */}
+            <div className="mt-6">
+              <div className="flex justify-between mb-2">
+                <span className="text-sm font-medium">Progress</span>
+
+                <span className="text-sm font-semibold text-[#134080]">
+                  {task.progress}%
+                </span>
+              </div>
+
+              <ProgressBar progress={task.progress} />
+            </div>
+
+            {/* Footer */}
+            <div className="mt-6 flex flex-col xl:flex-row xl:justify-between gap-4">
+              <button
+                onClick={() => onDeliverables(task)}
+                className="flex items-center justify-center gap-2 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-lg font-medium"
+              >
+                <Link2 size={18} />
+                Deliverables ({task.deliverables?.length || 0})
+              </button>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => onView(task)}
+                  className="px-4 py-2 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 font-medium"
+                >
+                  View
+                </button>
+
+                {canEdit && (
                   <button
-                    onClick={() => onView(task)}
-                    className="px-3 py-1 rounded bg-slate-100 hover:bg-slate-200 text-sm"
+                    onClick={() => onEdit(task)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium"
                   >
-                    View
+                    <Pencil size={16} />
+                    Edit
                   </button>
+                )}
 
-                  {/* Edit - Admin + Team Lead + Employee */}
-                  {user && (
-                    <button
-                      onClick={() => onEdit(task)}
-                      className="px-3 py-1 rounded bg-blue-100 text-blue-700"
-                    >
-                      Edit
-                    </button>
-                  )}
+                {canDelete && (
+                  <button
+                    onClick={() => onDelete(task)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 font-medium"
+                  >
+                    <Trash2 size={16} />
+                    Delete
+                  </button>
+                )}
 
-                  {/* Status - Everyone */}
+                {canUpdateStatus && (
                   <select
                     value={task.status}
                     onChange={(e) => onStatusChange(task._id, e.target.value)}
-                    className="border rounded-lg px-3 py-2"
+                    className="border rounded-lg px-4 py-2"
                   >
                     <option value="Pending">Pending</option>
-
                     <option value="In Progress">In Progress</option>
-
                     <option value="Completed">Completed</option>
-
                     <option value="On Hold">On Hold</option>
                   </select>
-
-                  {/* Delete - Everyone */}
-                  {user && (
-                    <button
-                      onClick={() => onDelete(task)}
-                      className="px-3 py-1 rounded bg-red-100 text-red-700"
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };

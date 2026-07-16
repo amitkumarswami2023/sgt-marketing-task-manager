@@ -5,6 +5,7 @@ import {
   updateTaskAPI,
   deleteTaskAPI,
   updateTaskStatusAPI,
+  addDeliverableAPI,
 } from "./taskAPI";
 
 // ================= CREATE TASK =================
@@ -13,8 +14,7 @@ export const createTask = createAsyncThunk(
   "tasks/createTask",
   async (taskData, thunkAPI) => {
     try {
-      const response = await createTaskAPI(taskData);
-      return response;
+      return await createTaskAPI(taskData);
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Create task failed",
@@ -29,8 +29,7 @@ export const getTasks = createAsyncThunk(
   "tasks/getTasks",
   async (_, thunkAPI) => {
     try {
-      const response = await getTasksAPI();
-      return response;
+      return await getTasksAPI();
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Unable to fetch tasks",
@@ -45,8 +44,7 @@ export const updateTask = createAsyncThunk(
   "tasks/updateTask",
   async ({ id, taskData }, thunkAPI) => {
     try {
-      const response = await updateTaskAPI(id, taskData);
-      return response;
+      return await updateTaskAPI(id, taskData);
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Update failed",
@@ -61,8 +59,7 @@ export const deleteTask = createAsyncThunk(
   "tasks/deleteTask",
   async (id, thunkAPI) => {
     try {
-      const response = await deleteTaskAPI(id);
-      return response;
+      return await deleteTaskAPI(id);
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Delete failed",
@@ -77,15 +74,28 @@ export const updateTaskStatus = createAsyncThunk(
   "tasks/updateTaskStatus",
   async ({ id, status, progress }, thunkAPI) => {
     try {
-      const response = await updateTaskStatusAPI(id, {
+      return await updateTaskStatusAPI(id, {
         status,
         progress,
       });
-
-      return response;
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Status update failed",
+      );
+    }
+  },
+);
+
+// ================= ADD DELIVERABLE =================
+
+export const addDeliverable = createAsyncThunk(
+  "tasks/addDeliverable",
+  async ({ id, deliverable }, thunkAPI) => {
+    try {
+      return await addDeliverableAPI(id, deliverable);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Unable to add deliverable",
       );
     }
   },
@@ -105,7 +115,7 @@ const taskSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      // GET TASKS
+      // ================= GET =================
 
       .addCase(getTasks.pending, (state) => {
         state.loading = true;
@@ -116,13 +126,18 @@ const taskSlice = createSlice({
         state.tasks = action.payload.tasks;
       })
 
-      // CREATE TASK
+      .addCase(getTasks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // ================= CREATE =================
 
       .addCase(createTask.fulfilled, (state, action) => {
         state.tasks.unshift(action.payload.task);
       })
 
-      // UPDATE TASK
+      // ================= UPDATE =================
 
       .addCase(updateTask.fulfilled, (state, action) => {
         const index = state.tasks.findIndex(
@@ -134,7 +149,7 @@ const taskSlice = createSlice({
         }
       })
 
-      // DELETE TASK
+      // ================= DELETE =================
 
       .addCase(deleteTask.fulfilled, (state, action) => {
         state.tasks = state.tasks.filter(
@@ -142,9 +157,21 @@ const taskSlice = createSlice({
         );
       })
 
-      // STATUS UPDATE
+      // ================= STATUS =================
 
       .addCase(updateTaskStatus.fulfilled, (state, action) => {
+        const index = state.tasks.findIndex(
+          (task) => task._id === action.payload.task._id,
+        );
+
+        if (index !== -1) {
+          state.tasks[index] = action.payload.task;
+        }
+      })
+
+      // ================= DELIVERABLE =================
+
+      .addCase(addDeliverable.fulfilled, (state, action) => {
         const index = state.tasks.findIndex(
           (task) => task._id === action.payload.task._id,
         );

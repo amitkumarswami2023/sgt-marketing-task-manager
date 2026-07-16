@@ -47,27 +47,13 @@ export const createUser = async (req, res) => {
 };
 
 // GET ALL USERS
+// GET ALL USERS
 export const getUsers = async (req, res) => {
   try {
-    let filter = {};
-
-    // Team Lead -> only employees from own department
-    if (req.user.role === "team-lead") {
-      filter = {
-        department: req.user.department,
-        role: "employee",
-      };
-    }
-
-    // Employee -> only himself
-    else if (req.user.role === "employee") {
-      filter = {
-        _id: req.user._id,
-      };
-    }
-
-    // Admin -> everyone
-    const users = await User.find(filter).select("-password");
+    // Everyone can see everyone except Admin
+    const users = await User.find({
+      role: { $ne: "admin" },
+    }).select("-password");
 
     res.status(200).json({
       success: true,
