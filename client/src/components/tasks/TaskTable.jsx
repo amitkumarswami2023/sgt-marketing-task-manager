@@ -103,7 +103,7 @@ const TaskTable = ({
             </div>
 
             {/* Progress */}
-            <div className="mt-6">
+            {/* <div className="mt-6">
               <div className="flex justify-between mb-2">
                 <span className="text-sm font-medium">Progress</span>
 
@@ -113,7 +113,7 @@ const TaskTable = ({
               </div>
 
               <ProgressBar progress={task.progress} />
-            </div>
+            </div> */}
 
             {/* Footer */}
             <div className="mt-6 flex flex-col xl:flex-row xl:justify-between gap-4">

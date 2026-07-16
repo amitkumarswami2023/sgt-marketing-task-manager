@@ -4,6 +4,7 @@ import userReducer from "../features/users/userSlice";
 import taskReducer from "../features/tasks/taskSlice";
 import dashboardReducer from "../features/dashboard/dashboardSlice";
 import reportReducer from "../features/reports/reportSlice";
+import notificationReducer from "../features/notifications/notificationSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,5 +13,6 @@ export const store = configureStore({
     tasks: taskReducer,
     dashboard: dashboardReducer,
     reports: reportReducer,
+    notifications: notificationReducer,
   },
 });

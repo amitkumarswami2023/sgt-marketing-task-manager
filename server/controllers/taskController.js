@@ -1,6 +1,6 @@
 import Task from "../models/Task.js";
 import User from "../models/User.js";
-
+import Notification from "../models/Notification.js";
 // ========================
 // Create Task
 // ========================
@@ -61,6 +61,15 @@ export const createTask = async (req, res) => {
       .populate("assignedTo", "name email designation")
       .populate("assignedBy", "name")
       .populate("deliverables.addedBy", "name");
+
+    await Notification.create({
+      user: assignedTo,
+      sender: req.user._id,
+      task: task._id,
+      type: "task_assigned",
+      title: "New Task Assigned",
+      message: `${req.user.name} assigned you "${task.title}".`,
+    });
 
     return res.status(201).json({
       success: true,
@@ -287,6 +296,15 @@ export const updateTaskStatus = async (req, res) => {
 
     await task.save();
 
+    await Notification.create({
+      user: task.assignedBy,
+      sender: req.user._id,
+      task: task._id,
+      type: "task_status_changed",
+      title: "Task Status Updated",
+      message: `${req.user.name} changed "${task.title}" to ${task.status}.`,
+    });
+
     const updatedTask = await Task.findById(task._id)
       .populate("assignedTo", "name email designation department")
       .populate("assignedBy", "name")
@@ -339,6 +357,15 @@ export const addDeliverable = async (req, res) => {
     });
 
     await task.save();
+
+    await Notification.create({
+      user: task.assignedBy,
+      sender: req.user._id,
+      task: task._id,
+      type: "deliverable_added",
+      title: "Deliverable Submitted",
+      message: `${req.user.name} submitted a deliverable for "${task.title}".`,
+    });
 
     const updatedTask = await Task.findById(task._id)
       .populate("assignedTo", "name email designation")
